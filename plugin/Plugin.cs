@@ -33,7 +33,6 @@ public sealed class Plugin : IDalamudPlugin
     [PluginService] internal static IObjectTable ObjectTable { get; private set; } = null!;
     [PluginService] internal static ITargetManager TargetManager { get; private set; } = null!;
     [PluginService] internal static IFramework Framework { get; private set; } = null!;
-    [PluginService] internal static IGameInteropProvider GameInterop { get; private set; } = null!;
 
     private const string MainCommand = "/popotovox";
     private const string ShortCommand = "/pvox";

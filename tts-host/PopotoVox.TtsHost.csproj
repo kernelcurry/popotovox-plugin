@@ -18,10 +18,33 @@
     <AssemblyName>PopotoVox.TtsHost</AssemblyName>
     <InvariantGlobalization>true</InvariantGlobalization>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+
+    <!--
+      Official-repo (Plogon) builds run with the network disabled and restore only from an
+      offline cache seeded from every committed packages.lock.json in the repo. This project
+      is published by the plugin's PublishTtsHost target inside that sandbox, so it needs its
+      own committed lockfile, and the self-contained runtime version must be pinned so the
+      sandbox restore requests exactly the runtime packs named below.
+    -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <RuntimeFrameworkVersion>10.0.10</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="org.k2fsa.sherpa.onnx" Version="1.13.2" />
+
+    <!--
+      These contribute nothing to the build (all assets excluded) — they exist so the
+      runtime packs land in packages.lock.json. Self-contained win-x64 restore requests
+      them at <RuntimeFrameworkVersion>, and the official repo's offline builder only
+      pre-fetches packages named in lockfiles (its built-in runtime-pack list is pinned
+      to older patch versions and omits WindowsDesktop entirely). Versions must match
+      <RuntimeFrameworkVersion> above.
+    -->
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" Version="10.0.10" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETCore.App.Host.win-x64" Version="10.0.10" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.AspNetCore.App.Runtime.win-x64" Version="10.0.10" ExcludeAssets="all" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.10" ExcludeAssets="all" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

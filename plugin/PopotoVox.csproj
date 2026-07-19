@@ -1,8 +1,12 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
   <PropertyGroup>
-    <Version>0.9.9.0</Version>
+    <Version>0.9.10.0</Version>
     <IsPackable>false</IsPackable>
+
+    <!-- Linux containers (our Docker CI and the official repo's Plogon builder) need this to
+         build the net10.0-windows TFM; it is a no-op on Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
 
     <!-- Branding -->
     <Authors>kernelcurry</Authors>
@@ -20,7 +24,9 @@
     <InternalName>PopotoVox</InternalName>
     <Author>kernelcurry</Author>
     <Punchline>Every popoto gets a voice.</Punchline>
-    <Description>Distinct, LLM-cast synthetic voices for FFXIV NPCs, rendered locally.</Description>
+    <!-- The official repo's AI Usage Policy requires AI-generated assets to be disclosed
+         in the plugin description (icon + gallery art). -->
+    <Description>Distinct, LLM-cast synthetic voices for FFXIV NPCs, rendered locally. Icon and preview images are AI-generated.</Description>
     <ApplicableVersion>any</ApplicableVersion>
     <DalamudApiLevel>15</DalamudApiLevel>
     <Tags>voice;tts;npc;audio;dialogue;accessibility</Tags>
