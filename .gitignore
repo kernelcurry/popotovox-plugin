@@ -1,0 +1,23 @@
+﻿# .NET build output
+bin/
+obj/
+
+# Release artifacts (built locally / by CI)
+dist/
+**/PopotoVox.zip
+
+# IDE / OS
+.idea/
+.vs/
+.vscode/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+
+# Manifest signing - the PRIVATE key never enters any repo.
+.signing/
+
+# Scratch
+.asset-staging/
+__pycache__/

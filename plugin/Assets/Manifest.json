@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "pluginVersion": "0.0.1",
+  "assets": [
+    {
+      "id": "piper",
+      "kind": "TtsEngine",
+      "tier": "1a",
+      "url": "https://github.com/rhasspy/piper/releases/download/2023.11.14-2/piper_windows_amd64.zip",
+      "size": 22477236,
+      "sha256": "f3c58906402b24f3a96d92145f58acba6d86c9b5db896d207f78dc80811efcea",
+      "archive": "zip",
+      "license": "MIT",
+      "attribution": "Piper (c) Rhasspy, MIT. Bundles espeak-ng (GPL-3.0) and ONNX Runtime (MIT) as separate binaries.",
+      "installDir": "piper"
+    },
+    {
+      "id": "libritts-high.onnx",
+      "kind": "TtsModel",
+      "tier": "2",
+      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/libritts/high/en_US-libritts-high.onnx",
+      "size": 136673811,
+      "sha256": "9127a559e11603f10b366d1a20ac7426826081dbc521de4c2420c57728d73f0f",
+      "license": "CC BY 4.0",
+      "attribution": "en_US-libritts-high Piper voice, trained on LibriTTS (CC BY 4.0).",
+      "installPath": "models/en_US-libritts-high.onnx"
+    },
+    {
+      "id": "libritts-high.onnx.json",
+      "kind": "TtsModelConfig",
+      "tier": "2",
+      "url": "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/libritts/high/en_US-libritts-high.onnx.json",
+      "size": 20163,
+      "sha256": "2efdc6d7f954588b8180132cbd9b8001933fdd00932c92bc92fd0d2028a9eb3d",
+      "license": "CC BY 4.0",
+      "attribution": "en_US-libritts-high Piper voice config (CC BY 4.0).",
+      "installPath": "models/en_US-libritts-high.onnx.json"
+    },
+    {
+      "id": "kokoro-multi-lang-v1_0",
+      "kind": "KokoroModel",
+      "tier": "2",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2",
+      "size": 349418188,
+      "sha256": "c133d26353d776da730870dac7da07dbfc9a5e3bc80cc5e8e83ab6e823be7046",
+      "archive": "tarbz2",
+      "license": "Apache-2.0",
+      "attribution": "Kokoro TTS model (Apache-2.0) by hexgrad; packaged for sherpa-onnx by k2-fsa (multi-lang-v1_0, 53 voices / 9 accents). Bundle includes espeak-ng data (GPL-3.0).",
+      "installDir": "kokoro"
+    },
+    {
+      "id": "llama-cuda",
+      "kind": "LlmRuntimeCuda",
+      "tier": "1c",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b9637/llama-b9637-bin-win-cuda-12.4-x64.zip",
+      "size": 261170141,
+      "sha256": "e0080832743b478fc3d1a465c2d281091c3e02145d70ad06ad181f81895270a8",
+      "archive": "zip",
+      "license": "MIT",
+      "attribution": "llama.cpp CUDA build (c) ggml-org / Georgi Gerganov, MIT.",
+      "installDir": "llama-cuda"
+    },
+    {
+      "id": "llama-cudart",
+      "kind": "LlmRuntimeCuda",
+      "tier": "1c",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b9637/cudart-llama-bin-win-cuda-12.4-x64.zip",
+      "size": 391443627,
+      "sha256": "8c79a9b226de4b3cacfd1f83d24f962d0773be79f1e7b75c6af4ded7e32ae1d6",
+      "archive": "zip",
+      "license": "NVIDIA-CUDA",
+      "attribution": "NVIDIA CUDA runtime (cudart), freely redistributable, packaged by llama.cpp.",
+      "installDir": "llama-cuda"
+    },
+    {
+      "id": "llama-server",
+      "kind": "LlmRuntime",
+      "tier": "1b",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b9630/llama-b9630-bin-win-cpu-x64.zip",
+      "size": 16898029,
+      "sha256": "3f6ba6edc4b7346ea35a2d9a55d54949b3d0733b59e335ec72c455b864829c34",
+      "archive": "zip",
+      "license": "MIT",
+      "attribution": "llama.cpp (c) ggml-org / Georgi Gerganov, MIT.",
+      "installDir": "llama"
+    },
+    {
+      "id": "qwen2.5-1.5b-instruct-q4",
+      "kind": "LlmModel",
+      "tier": "3",
+      "url": "https://huggingface.co/bartowski/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/Qwen2.5-1.5B-Instruct-Q4_K_M.gguf",
+      "size": 986048768,
+      "sha256": "1adf0b11065d8ad2e8123ea110d1ec956dab4ab038eab665614adba04b6c3370",
+      "license": "Apache-2.0",
+      "attribution": "Qwen2.5-1.5B-Instruct (c) Alibaba Cloud, Apache-2.0. GGUF quantization by bartowski.",
+      "installPath": "models/Qwen2.5-1.5B-Instruct-Q4_K_M.gguf"
+    }
+  ]
+}

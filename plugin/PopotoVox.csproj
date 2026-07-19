@@ -1,0 +1,84 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+
+  <PropertyGroup>
+    <Version>0.9.6.0</Version>
+    <IsPackable>false</IsPackable>
+
+    <!-- Branding -->
+    <Authors>kernelcurry</Authors>
+    <Company>kernelcurry</Company>
+    <Copyright>Copyright © kernelcurry</Copyright>
+    <PackageProjectUrl>https://github.com/kernelcurry/popotovox-plugin</PackageProjectUrl>
+  </PropertyGroup>
+
+  <!--
+    Dalamud plugin manifest. Since Dalamud.NET.Sdk v14 these properties drive
+    the generated manifest at build time — no separate PopotoVox.json needed.
+  -->
+  <PropertyGroup>
+    <Name>PopotoVox</Name>
+    <InternalName>PopotoVox</InternalName>
+    <Author>kernelcurry</Author>
+    <Punchline>Every popoto gets a voice.</Punchline>
+    <Description>Distinct, LLM-cast synthetic voices for FFXIV NPCs, rendered locally.</Description>
+    <ApplicableVersion>any</ApplicableVersion>
+    <DalamudApiLevel>15</DalamudApiLevel>
+    <Tags>voice;tts;npc;audio;dialogue;accessibility</Tags>
+    <CategoryTags>other</CategoryTags>
+    <RepoUrl>https://github.com/kernelcurry/popotovox-plugin</RepoUrl>
+    <AcceptsFeedback>true</AcceptsFeedback>
+  </PropertyGroup>
+
+  <!--
+    The Dalamud SDK sets TargetFramework=net10.0-windows, Platforms=x64,
+    Nullable=enable, AllowUnsafeBlocks=true, and adds DalamudPackager
+    automatically. It does NOT set EnableWindowsTargeting — pass it on the
+    build command line (-p:EnableWindowsTargeting=true) when building from
+    Linux / macOS (e.g. inside our Docker container).
+  -->
+
+  <!--
+    NAudio renders our TTS PCM to the user's speakers. It is NOT a Dalamud-
+    provided assembly, so DalamudPackager bundles its DLLs from the build output
+    into the release zip automatically (do not mark it private/runtime-excluded).
+  -->
+  <!--
+    The plugin itself contains NO native TTS code. Kokoro runs in the isolated
+    PopotoVox.TtsHost.exe helper (built from ../tts-host) so a voice-engine fault
+    can never crash the game (PRD D10). The plugin only needs NAudio (playback) and
+    SharpZipLib (to extract the .tar.bz2 model).
+  -->
+  <ItemGroup>
+    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="SharpZipLib" Version="1.4.2" />
+  </ItemGroup>
+
+  <!--
+    Build + publish the isolated TTS helper into the plugin output as tts-host/, so
+    a dev-plugin install (pointing at bin/$(Configuration)) can launch it. Runs after
+    the plugin Build. (For distribution the helper bundle will move to a verified
+    download; bundling it in the dev output is fine for local testing.)
+  -->
+  <Target Name="PublishTtsHost" AfterTargets="Build">
+    <Exec Command="dotnet publish &quot;$(MSBuildProjectDirectory)\..\tts-host\PopotoVox.TtsHost.csproj&quot; -c $(Configuration) -r win-x64 --self-contained true -o &quot;$(OutDir)tts-host&quot;" />
+  </Target>
+
+  <!--
+    The asset manifest and its detached signature live INSIDE the plugin binary
+    (PRD §8.1 #1/#2) so they cannot be swapped at rest. The downloader trusts
+    only what the embedded, signature-verified manifest names.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\Manifest.json" />
+    <EmbeddedResource Include="Assets\Manifest.json.sig" />
+  </ItemGroup>
+
+  <!--
+    Plugin icon: images/icon.png in the output is packaged by DalamudPackager and shown in the
+    installed-plugins list; repo.json's IconUrl points at the same file in the repo for the browse list.
+  -->
+  <ItemGroup>
+    <None Include="..\images\icon.png" Link="images\icon.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

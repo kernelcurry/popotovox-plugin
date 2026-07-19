@@ -1,0 +1,40 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # needed to create releases on tag pushes
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build plugin via Docker
+        run: bash build.sh
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PopotoVox-${{ github.sha }}
+          path: dist/PopotoVox.zip
+          if-no-files-found: error
+          retention-days: 14
+
+      # Uses the runner's preinstalled `gh` CLI with the workflow's own token — no third-party
+      # release action, so no external code ever holds the contents:write token.
+      - name: Publish release (on v* tag)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test -f dist/PopotoVox.zip
+          gh release create "$GITHUB_REF_NAME" dist/PopotoVox.zip --generate-notes --verify-tag
