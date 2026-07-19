@@ -33,12 +33,12 @@ public sealed class VoxCpmEngine : ITtsEngine
     private VoxCpmHostProcess? host;
     private readonly ConcurrentDictionary<string, Lazy<Task<string>>> designing = new(); // dedupe same-voice designs
 
-    public VoxCpmEngine(PluginPaths paths, Func<Configuration>? config = null)
+    public VoxCpmEngine(PluginPaths paths, string pluginDir, Func<Configuration>? config = null)
     {
         voicesCache = paths.VoicesCache;
         tempDir = paths.PiperTemp;
         this.config = config;
-        runtime = VoxCpmRuntime.TryLoad(paths.VoxCpmDevConfigPath);
+        runtime = VoxCpmRuntime.Resolve(paths, pluginDir);
         PruneVoicesCache(); // drop stale/oversized reference WAVs from previous sessions
     }
 
@@ -48,13 +48,13 @@ public sealed class VoxCpmEngine : ITtsEngine
     private static (bool present, DateTime at) runtimeProbe; // cached — the UI asks every frame
 
     /// <summary>Whether the VoxCPM2 runtime is present, without building an engine — mirrors
-    /// <see cref="IsReady"/> for the setup/Settings tiles (dev-config until packaged assets ship).
-    /// Cached for a couple of seconds so per-frame UI polling doesn't hit the filesystem.</summary>
-    public static bool RuntimePresent(PluginPaths paths)
+    /// <see cref="IsReady"/> for the setup/Settings tiles (dev-config override OR the packaged
+    /// downloaded layout). Cached for a couple of seconds so per-frame UI polling doesn't hit
+    /// the filesystem.</summary>
+    public static bool RuntimePresent(PluginPaths paths, string pluginDir)
     {
         if ((DateTime.UtcNow - runtimeProbe.at).TotalSeconds < 2) return runtimeProbe.present;
-        var r = VoxCpmRuntime.TryLoad(paths.VoxCpmDevConfigPath);
-        var ok = r != null && File.Exists(r.Python) && File.Exists(r.Script);
+        var ok = VoxCpmRuntime.Resolve(paths, pluginDir) != null;
         runtimeProbe = (ok, DateTime.UtcNow);
         return ok;
     }
@@ -209,9 +209,26 @@ public sealed class VoxCpmEngine : ITtsEngine
         }
     }
 
-    /// <summary>Resolved runtime locations for the VoxCPM2 Python helper (dev: from voxcpm-dev.json).</summary>
+    /// <summary>Resolved runtime locations for the VoxCPM2 Python helper. The hand-installed
+    /// dev-config (voxcpm-dev.json) always wins; otherwise the packaged layout — the downloaded
+    /// portable runtime + model (signed-manifest assets) with the host script shipped in the
+    /// plugin's own output.</summary>
     private sealed record VoxCpmRuntime(string Python, string Script, string? Model)
     {
+        public static VoxCpmRuntime? Resolve(PluginPaths paths, string pluginDir)
+        {
+            var dev = TryLoad(paths.VoxCpmDevConfigPath);
+            if (dev != null) return dev;
+
+            var python = Path.Combine(paths.VoxCpmRuntimeDir, "python.exe");
+            var script = Path.Combine(pluginDir, "voxcpm-host", "voxcpm2_host.py");
+            var model = paths.VoxCpmModelDir;
+            // config.json is the model-snapshot sentinel: present ⇒ the zip extracted fully.
+            if (File.Exists(python) && File.Exists(script) && File.Exists(Path.Combine(model, "config.json")))
+                return new VoxCpmRuntime(python, script, model);
+            return null;
+        }
+
         public static VoxCpmRuntime? TryLoad(string devConfigPath)
         {
             try

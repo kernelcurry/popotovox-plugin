@@ -346,17 +346,35 @@ public sealed class Plugin : IDalamudPlugin
     private void OnDownloadsBatchCompleted()
     {
         var fresh = BuildLlmOptions();
-        if (fresh.ExePath == llm.Options.ExePath && fresh.NGpuLayers == llm.Options.NGpuLayers) return;
-        Log.Information($"[LLM] runtime changed on disk — restarting the casting/emotion LLM on the " +
-                        $"{(fresh.NGpuLayers > 0 ? "GPU (CUDA build)" : "CPU build")}.");
-        llm.Reconfigure(fresh);
+        if (fresh.ExePath != llm.Options.ExePath || fresh.NGpuLayers != llm.Options.NGpuLayers)
+        {
+            Log.Information($"[LLM] runtime changed on disk — restarting the casting/emotion LLM on the " +
+                            $"{(fresh.NGpuLayers > 0 ? "GPU (CUDA build)" : "CPU build")}.");
+            llm.Reconfigure(fresh);
+        }
+
+        // If the CONFIGURED engine just became fully installed (welcome banner, Storage install) while
+        // something else is serving — or nothing is ready — bring it live automatically. Downloading it
+        // WAS the user's intent; don't make them find a second button. RequestEngineTransition no-ops
+        // when the target is already live and latches against double-fires.
+        var target = Configuration.TtsEngine;
+        if ((target != ActiveEngineId || !Engine.IsReady) && EngineRuntimePresent(target))
+        {
+            var bundle = Assets.BundleForEngine(target, Configuration.LlmEnabled,
+                withCudaLlm: Hardware?.HasNvidiaGpu == true);
+            if (bundle.All(a => Downloads.IsInstalled(a.Id) == true))
+            {
+                Log.Information($"[Engine] configured engine '{target}' finished installing — going live.");
+                RequestEngineTransition(target);
+            }
+        }
     }
 
-    /// <summary>Whether an engine's non-downloadable runtime is present. Engines whose files all come
-    /// from the signed manifest are always "present" (their bundle answers the rest); VoxCPM2 needs its
-    /// hand-installed dev-config runtime until the packaged download ships.</summary>
+    /// <summary>Whether an engine's runtime is actually runnable on disk. Engines whose files all come
+    /// from the signed manifest are always "present" (their bundle answers the rest); VoxCPM2 checks
+    /// its resolved layout — the dev-config override or the packaged downloaded runtime + model.</summary>
     public bool EngineRuntimePresent(TtsEngineChoice engine) =>
-        engine != TtsEngineChoice.VoxCPM2 || VoxCpmEngine.RuntimePresent(Paths);
+        engine != TtsEngineChoice.VoxCPM2 || VoxCpmEngine.RuntimePresent(Paths, pluginDir);
 
     /// <summary>Commit a settings draft (the Voices-page "Apply"). Live-only knobs take effect immediately;
     /// an engine/preset change kicks off a live transition (download-if-needed → warm → swap), no reload.</summary>

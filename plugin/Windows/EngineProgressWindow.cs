@@ -111,7 +111,7 @@ public sealed class EngineProgressWindow : Window
             var st = plugin.Downloads.IsInstalled(a.Id);
             var mark = st switch { true => "✓", false => "•", _ => "…" };
             ImGui.TextColored(st == true ? Ui.Good : Ui.Muted, $"  {mark} {a.Id}");
-            ImGui.SameLine(); ImGui.TextDisabled($"({a.Size / (1024 * 1024)} MB)");
+            ImGui.SameLine(); ImGui.TextDisabled($"({Ui.FormatBytes(a.Size)})");
 
             var prog = plugin.Downloads.ProgressFor(a.Id);
             if (prog != null && prog.Phase is not DownloadPhase.Done && st != true)

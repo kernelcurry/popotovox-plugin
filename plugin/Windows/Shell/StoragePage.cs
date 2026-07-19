@@ -67,6 +67,7 @@ public sealed class StoragePage : IShellPage
             if (p.InstalledBytes > 0) segs.Add((p.Name, p.InstalledBytes, p.Color));
         if (savedBytes > 0) segs.Add(("Saved data", savedBytes, ColorFor("saved")));
         if (lineCacheBytes > 0) segs.Add(("Cached lines", lineCacheBytes, ColorFor("lines")));
+        if (voicesCacheBytes > 0) segs.Add(("Designed voices", voicesCacheBytes, ColorFor("voxcpm2")));
         var total = segs.Sum(s => s.Bytes);
 
         Ui.Heading($"PopotoVox is using {Ui.FormatBytes(total)}");
@@ -565,7 +566,9 @@ public sealed class StoragePage : IShellPage
     private ISet<string> BuildProtectedIds()
     {
         var set = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        // Protect the ACTIVE engine's files and the CONFIGURED one's (they differ mid-transition).
         foreach (var a in plugin.Assets.AssetsForEngine(plugin.ActiveEngineId)) set.Add(a.Id);
+        foreach (var a in plugin.Assets.AssetsForEngine(plugin.Configuration.TtsEngine)) set.Add(a.Id);
         if (plugin.Configuration.LlmEnabled)
             foreach (var a in plugin.Assets.LlmAssets(includeCuda: true)) set.Add(a.Id);
         return set;

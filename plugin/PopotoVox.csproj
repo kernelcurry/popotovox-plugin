@@ -1,7 +1,7 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
   <PropertyGroup>
-    <Version>0.9.6.0</Version>
+    <Version>0.9.7.0</Version>
     <IsPackable>false</IsPackable>
 
     <!-- Branding -->
@@ -79,5 +79,13 @@
     the build output: DalamudPackager excludes an `images` folder from the zip anyway (verified),
     and the ../images path broke the Docker build context.
   -->
+
+  <!--
+    The VoxCPM2 (Ultra) host script ships inside the plugin zip (like tts-host); its Python
+    runtime and model arrive separately via the signed-manifest downloads.
+  -->
+  <ItemGroup>
+    <None Include="..\voxcpm-host\voxcpm2_host.py" Link="voxcpm-host\voxcpm2_host.py" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>

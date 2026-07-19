@@ -15,6 +15,8 @@ public enum AssetKind
     LlmRuntime,       // CPU llama-server (the casting/emotion LLM)
     LlmRuntimeCuda,   // CUDA llama-server + cudart — runs the casting/emotion LLM on GPU
     LlmModel,         // the casting/emotion GGUF
+    VoxRuntime,       // portable Python runtime for the VoxCPM2 (Ultra) engine
+    VoxModel,         // the VoxCPM2 model snapshot (Ultra), loaded fully offline from disk
 }
 
 /// <summary>

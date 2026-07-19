@@ -238,14 +238,20 @@ public sealed class AssetDownloader : IDisposable
             if (!destination.StartsWith(root, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException($"Zip entry '{entry.FullName}' escapes the target directory.");
 
+            // \\?\ extended-length prefix: the VoxCPM2 runtime zip holds deep site-packages trees
+            // under an already-long config-dir base; the prefix keeps extraction working even when
+            // the OS LongPathsEnabled policy is off. Applied only at I/O time — the containment
+            // check above runs on the normal-form path.
+            var ioDestination = destination.StartsWith(@"\\?\") ? destination : @"\\?\" + destination;
+
             if (string.IsNullOrEmpty(entry.Name)) // directory entry
             {
-                Directory.CreateDirectory(destination);
+                Directory.CreateDirectory(ioDestination);
                 continue;
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            entry.ExtractToFile(destination, overwrite: true);
+            Directory.CreateDirectory(@"\\?\" + Path.GetDirectoryName(destination)!);
+            entry.ExtractToFile(ioDestination, overwrite: true);
         }
     }
 
@@ -292,11 +298,15 @@ public sealed class AssetDownloader : IDisposable
     /// <summary>True if the (archive) asset's verified marker is still present.</summary>
     public bool HasMarker(AssetEntry asset) => File.Exists(ArchiveMarkerPath(asset));
 
-    /// <summary>Recursively delete an extract directory (named relative to the assets root).</summary>
+    /// <summary>Recursively delete an extract directory (named relative to the assets root). Uses the
+    /// same <c>\\?\</c> extended-length prefix as extraction — the VoxCPM2 runtime's site-packages
+    /// trees exceed MAX_PATH where the LongPathsEnabled policy is off, and a normal-form recursive
+    /// delete would abort partway and strand gigabytes.</summary>
     public void DeleteInstallDir(string installDir)
     {
-        var dir = Path.Combine(paths.Assets, installDir);
-        try { if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true); }
+        var dir = Path.GetFullPath(Path.Combine(paths.Assets, installDir));
+        var ioDir = dir.StartsWith(@"\\?\") ? dir : @"\\?\" + dir;
+        try { if (Directory.Exists(ioDir)) Directory.Delete(ioDir, recursive: true); }
         catch { /* best-effort reclaim */ }
     }
 

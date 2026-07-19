@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pluginVersion": "0.0.1",
+  "pluginVersion": "0.9.6",
   "assets": [
     {
       "id": "piper",
@@ -94,6 +94,30 @@
       "license": "Apache-2.0",
       "attribution": "Qwen2.5-1.5B-Instruct (c) Alibaba Cloud, Apache-2.0. GGUF quantization by bartowski.",
       "installPath": "models/Qwen2.5-1.5B-Instruct-Q4_K_M.gguf"
+    },
+    {
+      "id": "voxcpm2-runtime",
+      "kind": "VoxRuntime",
+      "tier": "1d",
+      "url": "https://huggingface.co/kernelcurry/popotovox-voxcpm2-runtime/resolve/main/voxcpm2-runtime-win64-cu128-py312-v1.zip",
+      "size": 3576484258,
+      "sha256": "aa81e8250971d1e6e6a983ce277726a211cdce8db54360537c123eac1f0c3ec4",
+      "archive": "zip",
+      "license": "Aggregate-Permissive",
+      "attribution": "Portable CPython 3.12 (PSF) + torch 2.7.1+cu128 (BSD-3-Clause; bundles NVIDIA CUDA redistributables) + VoxCPM (c) OpenBMB (Apache-2.0) and pinned dependencies. Per-package license texts inside the zip under LICENSES/.",
+      "installDir": "voxcpm2/rt"
+    },
+    {
+      "id": "voxcpm2-model",
+      "kind": "VoxModel",
+      "tier": "3",
+      "url": "https://huggingface.co/kernelcurry/popotovox-voxcpm2-model/resolve/main/voxcpm2-model-v1.zip",
+      "size": 3975452251,
+      "sha256": "c9cc68f0a5a3e3b7d8c8ca88e093e09e409ea67440f459589fb19f2a5e5e6d01",
+      "archive": "zip",
+      "license": "Apache-2.0",
+      "attribution": "VoxCPM2 (c) OpenBMB, Apache-2.0. Repacked unmodified from the upstream Hugging Face snapshot; LICENSE and attribution inside the archive.",
+      "installDir": "voxcpm2/model"
     }
   ]
 }

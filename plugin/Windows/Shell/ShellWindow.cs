@@ -113,9 +113,9 @@ public sealed class ShellWindow : Window, IDisposable
         if (group.Count == 0) return;
         if (group.All(a => plugin.Downloads.IsInstalled(a.Id) == true)) return;
 
-        var mb = group.Sum(a => a.Size) / (1024 * 1024);
+        var sizeText = Ui.FormatBytes(group.Sum(a => a.Size));
         ImGui.TextColored(Ui.Accent, "👋 Welcome to PopotoVox — quick one-time setup");
-        ImGui.TextWrapped($"To give NPCs their voices, download the {info.DisplayName} voice (~{mb} MB, one time). " +
+        ImGui.TextWrapped($"To give NPCs their voices, download the {info.DisplayName} voice (~{sizeText}, one time). " +
                           "It's verified and runs entirely on your PC — no account, no cloud.");
 
         if (plugin.Downloads.Busy)
@@ -127,10 +127,10 @@ public sealed class ShellWindow : Window, IDisposable
         }
         else
         {
-            if (ImGui.Button($"Download & set up {info.DisplayName} voice  (~{mb} MB)"))
+            if (ImGui.Button($"Download & set up {info.DisplayName} voice  (~{sizeText})"))
                 plugin.Downloads.StartDownload(group);
             ImGui.SameLine();
-            ImGui.TextDisabled("then reload PopotoVox (turn it off and on in /xlplugins)");
+            ImGui.TextDisabled("it goes live by itself when the download finishes — no reload needed");
         }
         if (plugin.Downloads.LastError != null)
             ImGui.TextColored(Ui.Bad, "Setup error: " + plugin.Downloads.LastError);

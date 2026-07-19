@@ -180,7 +180,7 @@ public sealed class SetupWindow : Window, IDisposable
     {
         var engine = TtsEngineCatalog.Get(PresetEngine(p));
         var bundle = BundleFor(p);
-        var mb = bundle.Sum(a => a.Size) / (1024 * 1024);
+        var sizeText = Ui.FormatBytes(bundle.Sum(a => a.Size));
         var installed = PresetInstalled(p, bundle);
 
         Ui.BeginCard(QualityIcon(p), PresetName(p));
@@ -190,7 +190,7 @@ public sealed class SetupWindow : Window, IDisposable
         if (Recommended() == p) { ImGui.SameLine(0, 8f); ImGui.TextColored(Ui.Good, "★ Recommended"); }
         if (installed) { ImGui.SameLine(0, 8f); ImGui.TextColored(Ui.Good, "✓ Installed"); }
 
-        ImGui.TextDisabled($"{engine.DisplayName} · {(engine.RequiresGpu ? "NVIDIA GPU" : "CPU")} · ~{mb} MB download");
+        ImGui.TextDisabled($"{engine.DisplayName} · {(engine.RequiresGpu ? "NVIDIA GPU" : "CPU")} · ~{sizeText} download");
         Ui.Paragraph(PresetBlurb(p));
         ImGui.TextDisabled("Recommended hardware: " + PresetHardware(p));
 
@@ -225,7 +225,7 @@ public sealed class SetupWindow : Window, IDisposable
             var st = plugin.Downloads.IsInstalled(a.Id);
             var mark = st switch { true => "✓", false => "•", _ => "…" };
             ImGui.TextColored(st == true ? Ui.Good : Ui.Muted, $"  {mark} {a.Id}");
-            ImGui.SameLine(); ImGui.TextDisabled($"({a.Size / (1024 * 1024)} MB)");
+            ImGui.SameLine(); ImGui.TextDisabled($"({Ui.FormatBytes(a.Size)})");
 
             var prog = plugin.Downloads.ProgressFor(a.Id);
             if (prog != null && prog.Phase is not DownloadPhase.Done && st != true)
@@ -246,11 +246,11 @@ public sealed class SetupWindow : Window, IDisposable
         }
         else if (downloaded)
         {
-            // Everything downloadable is here but the engine still can't run (Ultra until its packaged
-            // runtime ships) — say so honestly instead of pretending it's ready.
+            // Everything downloaded but the engine still doesn't resolve on disk (e.g. an extraction
+            // was interrupted) — be honest rather than pretending it's ready.
             Ui.Banner(FontAwesomeIcon.ExclamationTriangle,
-                $"{engine.DisplayName} isn't available as a download yet — it currently needs a manual " +
-                "install. Pick another quality to get talking now; Ultra ships as a one-click download soon.", Ui.Warn);
+                $"{engine.DisplayName} downloaded but isn't ready to run — try removing and " +
+                "reinstalling it from the Storage page.", Ui.Warn);
         }
         else if (plugin.Downloads.Busy)
         {
@@ -260,7 +260,9 @@ public sealed class SetupWindow : Window, IDisposable
         }
         else
         {
-            if (ImGui.Button($"Download everything  (~{totalMb} MB)", new Vector2(-1, 0)))
+            if (totalMb > 2000)
+                ImGui.TextDisabled("A large one-time download — voices run fully offline afterwards.");
+            if (ImGui.Button($"Download everything  (~{Ui.FormatBytes(bundle.Sum(a => a.Size))})", new Vector2(-1, 0)))
                 plugin.Downloads.StartDownload(bundle);
         }
 
@@ -281,12 +283,22 @@ public sealed class SetupWindow : Window, IDisposable
         return $"Your PC: {gpu} · {h.CpuCores} cores";
     }
 
+    /// <summary>RTX 40/50-series render VoxCPM2 faster than real time (smooth streaming); a 3090-class
+    /// card runs it but streams slower than playback, so it isn't auto-recommended.</summary>
+    private static bool GpuLooksModern(string? name) =>
+        name != null && (name.Contains("RTX 40") || name.Contains("RTX 50"));
+
     private QualityPreset Recommended()
     {
-        // Ultra (VoxCPM2) isn't auto-recommended until it ships as a verified download (it runs from a
-        // dev config for now). High (Kokoro) is CPU-only — recommend it on any reasonably modern
-        // machine; Medium (Piper) stays the pick for low-core CPUs where Kokoro would lag behind.
-        if (hw is { } h && h.CpuCores >= 8) return QualityPreset.High;
+        if (hw is { } h)
+        {
+            // Ultra for GPUs that stream it smoothly with VRAM headroom (the model itself wants ~8 GB).
+            if (h.HasNvidiaGpu && h.GpuVramMb >= 10000 && GpuLooksModern(h.GpuName) && !DriverOld(h))
+                return QualityPreset.Ultra;
+            // High (Kokoro) is CPU-only — the pick for any reasonably modern machine; Medium (Piper)
+            // stays the choice for low-core CPUs where Kokoro would lag behind.
+            if (h.CpuCores >= 8) return QualityPreset.High;
+        }
         return QualityPreset.Medium;
     }
 
@@ -308,8 +320,12 @@ public sealed class SetupWindow : Window, IDisposable
                 if (!h.HasNvidiaGpu) return ("Needs an NVIDIA GPU", Ui.Bad);
                 if (DriverOld(h)) return ("Update your NVIDIA driver", Ui.Warn);
                 if (h.GpuVramMb < 8000) return ("Needs ~8 GB VRAM", Ui.Bad);
-                if (h.FreeDiskMb is > 0 and < 13000)
-                    return ($"Needs ~13 GB free — you have {h.FreeDiskMb / 1024} GB", Ui.Warn);
+                // Installed ≈ 13 GB (runtime 6 + model 5 + CUDA casting AI ~2) plus ~4 GB transient
+                // download staging for the largest zip.
+                if (h.FreeDiskMb is > 0 and < 18000)
+                    return ($"Needs ~18 GB free — you have {h.FreeDiskMb / 1024} GB", Ui.Warn);
+                if (!GpuLooksModern(h.GpuName))
+                    return ("Runs — voice streaming may stutter on this GPU", Ui.Warn);
                 return ("Great on your PC", Ui.Good);
             default:
                 return ("", Ui.Muted);
@@ -331,8 +347,8 @@ public sealed class SetupWindow : Window, IDisposable
             withLlm: p != QualityPreset.Low,                 // Medium/High/Ultra use smart casting
             withCudaLlm: hw?.HasNvidiaGpu == true);          // GPU machines get the CUDA caster-LLM build
 
-    /// <summary>Bundle installed AND the engine's non-downloadable runtime present (VoxCPM2 dev-config
-    /// until its packaged download ships) — the one honest "it will actually run" answer.</summary>
+    /// <summary>Bundle installed AND the engine's runtime resolves on disk (for VoxCPM2: the packaged
+    /// download layout or a dev-config override) — the one honest "it will actually run" answer.</summary>
     private bool PresetInstalled(QualityPreset p, List<AssetEntry> bundle) =>
         bundle.All(a => plugin.Downloads.IsInstalled(a.Id) == true)
         && plugin.EngineRuntimePresent(PresetEngine(p));
@@ -359,7 +375,7 @@ public sealed class SetupWindow : Window, IDisposable
         QualityPreset.Low => "Any CPU",
         QualityPreset.Medium => "Any modern CPU (4+ cores ideal)",
         QualityPreset.High => "Any modern CPU (6+ cores ideal) — no GPU needed",
-        QualityPreset.Ultra => "NVIDIA GPU · 8 GB+ VRAM",
+        QualityPreset.Ultra => "NVIDIA GPU (RTX 40/50 ideal) · 8 GB+ VRAM · ~18 GB disk",
         _ => "",
     };
 

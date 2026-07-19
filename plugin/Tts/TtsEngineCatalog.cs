@@ -69,11 +69,12 @@ public static class TtsEngineCatalog
         new TtsEngineInfo(
             // Single-model Ultra: designs a per-NPC reference in the speaker's native tongue (real accent),
             // then clones it per line with optional per-line emotion. SpeakerCount 0 = designed per NPC.
-            // AssetIds filled in when packaging ships (dev-config until then).
+            // Assets = the packaged portable Python runtime + model snapshot (the host script ships in
+            // the plugin zip itself). A hand-installed voxcpm-dev.json still overrides both.
             TtsEngineChoice.VoxCPM2, "VoxCPM2", Tier: 3, RequiresGpu: true, SupportsEmotion: true,
             SupportsStreaming: true, // autoregressive → can stream PCM as it generates (first sound sooner)
             SpeakerCount: 0,
-            AssetIds: Array.Empty<string>(),
+            AssetIds: new[] { "voxcpm2-runtime", "voxcpm2-model" },
             Notes: "Designs a unique accented voice for every NPC, then performs each line. One local AI model; NVIDIA GPU.",
             Tagline: "Designs a one-of-a-kind voice for every NPC",
             Summary: "The most lifelike tier. Designs a unique voice for each NPC from the casting description " +
@@ -90,7 +91,7 @@ public static class TtsEngineCatalog
         {
             TtsEngineChoice.Piper => new PiperEngine(paths, config.GlobalVoiceParams()),
             TtsEngineChoice.Kokoro => new KokoroEngine(paths, pluginDir),
-            TtsEngineChoice.VoxCPM2 => new VoxCpmEngine(paths, () => config),
+            TtsEngineChoice.VoxCPM2 => new VoxCpmEngine(paths, pluginDir, () => config),
             _ => throw new ArgumentOutOfRangeException(nameof(id), id, "Unknown TTS engine."),
         };
 }

@@ -17,6 +17,13 @@ public sealed class PluginPaths
     public string KokoroDir { get; }
     public string LlamaDir { get; }
     public string LlamaCudaDir { get; }
+
+    /// <summary>Packaged VoxCPM2 (Ultra) portable Python runtime. Deliberately short ("rt") — the zip
+    /// holds deep site-packages trees and the config-dir base is already long (MAX_PATH headroom).</summary>
+    public string VoxCpmRuntimeDir { get; }
+
+    /// <summary>Packaged VoxCPM2 (Ultra) model snapshot, loaded fully offline as a local directory.</summary>
+    public string VoxCpmModelDir { get; }
     public string Cache { get; }
     public string PiperTemp { get; }
 
@@ -46,6 +53,8 @@ public sealed class PluginPaths
         KokoroDir = Path.Combine(Assets, "kokoro");
         LlamaDir = Path.Combine(Assets, "llama");
         LlamaCudaDir = Path.Combine(Assets, "llama-cuda");
+        VoxCpmRuntimeDir = Path.Combine(Assets, "voxcpm2", "rt");
+        VoxCpmModelDir = Path.Combine(Assets, "voxcpm2", "model");
         Cache = Path.Combine(Root, "cache");
         PiperTemp = Path.Combine(Cache, "tts");
         VoicesCache = Path.Combine(Cache, "voices");

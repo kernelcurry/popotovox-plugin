@@ -23,6 +23,10 @@ public static class LicensePolicy
         "BSD-2-Clause", "BSD-3-Clause",
         "GPL-3.0", "GPL-3.0-or-later", "LGPL-3.0",
         "NVIDIA-CUDA", // NVIDIA CUDA runtime redistributables — freely redistributable with apps
+        // The packaged VoxCPM2 Python runtime zip: an aggregate of unmodified upstream packages that
+        // are EACH on this allowlist (PSF, MIT, BSD, Apache-2.0, NVIDIA-CUDA inside the torch wheels).
+        // Per-package license texts ship inside the zip under LICENSES/; breakdown in docs/LICENSES.md.
+        "Aggregate-Permissive",
         "Public Domain",
     };
 

@@ -34,9 +34,12 @@ public sealed class VoicesPage : IShellPage
 
     public void Draw()
     {
-        // Re-clone whenever the draft matches what's live (fresh page, or just after Apply/Revert) so an
-        // external change (Storage install, Setup) can't be silently overwritten by a stale draft on Apply.
-        draft ??= plugin.Configuration.Clone();
+        // The draft tracks the LIVE config until the user starts editing, so an external change (the
+        // setup wizard applying a preset, a Library import) shows up here immediately instead of a stale
+        // snapshot — the wizard-picked-Ultra-but-Settings-still-says-Piper bug. Once edits are pending
+        // (draftDirty) the draft freezes until Apply/Revert.
+        if (draft == null) draft = plugin.Configuration.Clone();
+        else if (!draftDirty) draft.CopyFrom(plugin.Configuration);
         var cfg = draft;
 
         // The settings scroll INSIDE their own region so the action bar can be pinned to the bottom of the
@@ -109,8 +112,8 @@ public sealed class VoicesPage : IShellPage
 
     /// <summary>True if everything the draft's engine needs to actually run is present: its download
     /// bundle (engine assets + caster LLM when casting is on, incl. the CUDA build on GPU machines) AND
-    /// any non-downloadable runtime (VoxCPM2's dev-config until its packaged download ships) — so Ultra
-    /// can never read "Ready" on a machine where it would throw at render time.</summary>
+    /// the engine's runtime resolving on disk (for VoxCPM2: the packaged layout or a dev-config
+    /// override) — so Ultra can never read "Ready" on a machine where it would throw at render time.</summary>
     private bool EngineBundleInstalled(TtsEngineChoice engine)
     {
         var bundle = plugin.Assets.BundleForEngine(engine,
@@ -202,8 +205,8 @@ public sealed class VoicesPage : IShellPage
     {
         var (name, engine, hardware, emotion, _) = PresetMeta(preset);
         // Check the whole bundle (engine + caster LLM, incl. the CUDA build on GPU machines), matching
-        // the setup wizard — plus the engine's non-downloadable runtime (VoxCPM2 dev-config), so Ultra
-        // never reads installed on a machine where it can't actually render.
+        // the setup wizard — plus the engine's runtime resolving on disk (VoxCPM2: packaged layout or
+        // dev-config), so Ultra never reads installed on a machine where it can't actually render.
         var bundle = plugin.Assets.BundleForEngine(engine, withLlm: preset != QualityPreset.Low,
             withCudaLlm: plugin.Hardware?.HasNvidiaGpu == true);
         var installed = bundle.All(a => plugin.Downloads.IsInstalled(a.Id) == true)

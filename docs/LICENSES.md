@@ -53,10 +53,12 @@ binary), never linked into our plugin code. (VoxCPM2 is tokenizer-free and does 
 | `llama-cudart` | NVIDIA CUDA runtime (`cudart`, `b9637`) | optional GPU runtime | NVIDIA-CUDA | freely redistributable; packaged with llama.cpp. |
 | `llama-server` | llama.cpp (`b9630`, win cpu x64) | LLM runtime — separate child process | MIT | llama.cpp © ggml-org / Georgi Gerganov (MIT). |
 | `qwen2.5-1.5b-instruct-q4` | **Qwen2.5-1.5B-Instruct** (bartowski GGUF, Q4_K_M) | casting + emotion LLM (default) | Apache-2.0 | Qwen2.5-1.5B-Instruct © Alibaba Cloud (Apache-2.0); GGUF quant by bartowski. Keep `NOTICE`. |
+| `voxcpm2-runtime` | Portable Python 3.12 env (torch 2.7.1+cu128, voxcpm 2.0.3 + pinned deps) | **Ultra** engine runtime — separate child process | Aggregate-Permissive | Aggregate of unmodified upstream packages, each individually permissive: CPython (PSF), torch (BSD-3-Clause, bundles NVIDIA CUDA redistributables), VoxCPM © OpenBMB (Apache-2.0), etc. Per-package license texts ship inside the zip under `LICENSES/`; build recipe = `tools/voxcpm-runtime-requirements.txt`. Hosted at `huggingface.co/kernelcurry/popotovox-voxcpm2-runtime`. |
+| `voxcpm2-model` | **VoxCPM2** model snapshot (repack) | **Ultra** voice model — design + clone, 48 kHz | Apache-2.0 | VoxCPM2 © OpenBMB (Apache-2.0), repacked **unmodified** from the upstream `openbmb/VoxCPM2` snapshot as one pinned-checksum zip (LICENSE + attribution inside). Hosted at `huggingface.co/kernelcurry/popotovox-voxcpm2-model`; loaded fully offline. |
 
-**Ultra assets — VoxCPM2 (Apache-2.0, OpenBMB)** are credited on the About page and run from the `voxcpm-host`
-Python venv. Its signed-manifest download packaging is **deferred** — until then Ultra runs from a local dev
-config — but the model is official upstream (`openbmb/VoxCPM2`) and license-clean.
+**Ultra (VoxCPM2)** is credited on the About page; the host script (`voxcpm-host/voxcpm2_host.py`) ships in
+the plugin zip, and the runtime + model above install via the signed manifest. A hand-installed dev config
+(`voxcpm-dev.json`) can still override the packaged layout for development.
 
 Note: signing the manifest uses ECDSA P-256 / SHA-256; the public key is embedded in
 the plugin, the private key is kept out of the repo (`.signing/`, gitignored).

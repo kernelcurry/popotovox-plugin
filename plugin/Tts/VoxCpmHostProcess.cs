@@ -213,7 +213,17 @@ internal sealed class VoxCpmHostProcess : IDisposable
         psi.Environment["TQDM_DISABLE"] = "1";                    // silence VoxCPM2's per-step progress bar (log spam)
         psi.Environment["HF_HUB_DISABLE_PROGRESS_BARS"] = "1";    // and HF download bars
         psi.Environment["VOXCPM_PARENT_PID"] = Environment.ProcessId.ToString(); // watchdog: exit if the game dies
-        if (!string.IsNullOrEmpty(model)) psi.Environment["VOXCPM_MODEL"] = model;
+        if (!string.IsNullOrEmpty(model))
+        {
+            psi.Environment["VOXCPM_MODEL"] = model;
+            if (Directory.Exists(model))
+            {
+                // Packaged local model dir → hard-offline: the host must never touch the network
+                // (PRD §8.1), and nothing may write into the user profile's HF cache.
+                psi.Environment["HF_HUB_OFFLINE"] = "1";
+                psi.Environment["HF_HOME"] = Path.Combine(Path.GetDirectoryName(model) ?? model, "hf-home");
+            }
+        }
 
         var p = new Process { StartInfo = psi };
         if (!p.Start()) throw new InvalidOperationException("Failed to start the VoxCPM2 host.");
