@@ -74,11 +74,10 @@
   </ItemGroup>
 
   <!--
-    Plugin icon: images/icon.png in the output is packaged by DalamudPackager and shown in the
-    installed-plugins list; repo.json's IconUrl points at the same file in the repo for the browse list.
+    Plugin icon: images/icon.png lives in the REPO and is served via repo.json's IconUrl
+    (raw.githubusercontent) — that is what the installer shows. It is deliberately NOT copied into
+    the build output: DalamudPackager excludes an `images` folder from the zip anyway (verified),
+    and the ../images path broke the Docker build context.
   -->
-  <ItemGroup>
-    <None Include="..\images\icon.png" Link="images\icon.png" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
 
 </Project>

@@ -31,8 +31,12 @@ RUN mkdir -p /opt/dalamud \
 # Dalamud.NET.Sdk reads $DALAMUD_HOME to locate the reference DLLs on Linux.
 ENV DALAMUD_HOME=/opt/dalamud
 
+# Everything the plugin build references: the plugin itself plus the helper projects its csproj
+# publishes/links into the output (the tts-host exe; the voxcpm-host script from M2 on).
 WORKDIR /src
 COPY plugin/ ./plugin/
+COPY tts-host/ ./tts-host/
+COPY voxcpm-host/ ./voxcpm-host/
 
 WORKDIR /src/plugin
 RUN dotnet restore -p:EnableWindowsTargeting=true
