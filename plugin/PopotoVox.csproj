@@ -1,7 +1,7 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
   <PropertyGroup>
-    <Version>0.9.7.0</Version>
+    <Version>0.9.8.0</Version>
     <IsPackable>false</IsPackable>
 
     <!-- Branding -->
@@ -26,6 +26,7 @@
     <Tags>voice;tts;npc;audio;dialogue;accessibility</Tags>
     <CategoryTags>other</CategoryTags>
     <RepoUrl>https://github.com/kernelcurry/popotovox-plugin</RepoUrl>
+    <IconUrl>https://raw.githubusercontent.com/kernelcurry/popotovox-plugin/main/images/icon.png</IconUrl>
     <AcceptsFeedback>true</AcceptsFeedback>
   </PropertyGroup>
 
