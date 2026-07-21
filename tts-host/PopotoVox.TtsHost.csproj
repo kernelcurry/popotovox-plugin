@@ -38,13 +38,13 @@
       runtime packs land in packages.lock.json. Self-contained win-x64 restore requests
       them at <RuntimeFrameworkVersion>, and the official repo's offline builder only
       pre-fetches packages named in lockfiles (its built-in runtime-pack list is pinned
-      to older patch versions and omits WindowsDesktop entirely). Versions must match
-      <RuntimeFrameworkVersion> above.
+      to older patch versions). Versions must match <RuntimeFrameworkVersion> above.
+      Only NETCore.App is seeded: this is a plain console app, so restore never requests
+      the AspNetCore or WindowsDesktop packs (each seed is a NEW package the official
+      repo's reviewers must vet — keep this list minimal).
     -->
     <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" Version="10.0.10" ExcludeAssets="all" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NETCore.App.Host.win-x64" Version="10.0.10" ExcludeAssets="all" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.AspNetCore.App.Runtime.win-x64" Version="10.0.10" ExcludeAssets="all" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.10" ExcludeAssets="all" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

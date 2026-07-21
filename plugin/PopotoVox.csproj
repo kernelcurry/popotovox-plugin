@@ -1,7 +1,7 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
   <PropertyGroup>
-    <Version>0.9.11.0</Version>
+    <Version>0.9.12.0</Version>
     <IsPackable>false</IsPackable>
 
     <!-- Linux containers (our Docker CI and the official repo's Plogon builder) need this to
@@ -49,6 +49,10 @@
     NAudio renders our TTS PCM to the user's speakers. It is NOT a Dalamud-
     provided assembly, so DalamudPackager bundles its DLLs from the build output
     into the release zip automatically (do not mark it private/runtime-excluded).
+
+    Core + WinMM only — NOT the NAudio metapackage: it drags in NAudio.WinForms,
+    whose WindowsDesktop framework reference the official repo's Linux (Plogon)
+    builder rejects. Playback uses WaveOutEvent (WinMM) + sample providers (Core).
   -->
   <!--
     The plugin itself contains NO native TTS code. Kokoro runs in the isolated
@@ -57,7 +61,8 @@
     SharpZipLib (to extract the .tar.bz2 model).
   -->
   <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.2.1" />
+    <PackageReference Include="NAudio.Core" Version="2.2.1" />
+    <PackageReference Include="NAudio.WinMM" Version="2.2.1" />
     <PackageReference Include="SharpZipLib" Version="1.4.2" />
   </ItemGroup>
 

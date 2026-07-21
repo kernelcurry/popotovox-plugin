@@ -2,12 +2,6 @@
   "version": 1,
   "dependencies": {
     "net10.0": {
-      "Microsoft.AspNetCore.App.Runtime.win-x64": {
-        "type": "Direct",
-        "requested": "[10.0.10, )",
-        "resolved": "10.0.10",
-        "contentHash": "YUpE0pT/TH+PdL13dbJSSTcgjvWJUQlfpZ+IbsVZfBnjSfB141cpY4snL9Gd3Y/XH7sTT957cG5+qPuIUjvBTQ=="
-      },
       "Microsoft.NETCore.App.Host.win-x64": {
         "type": "Direct",
         "requested": "[10.0.10, )",
@@ -19,12 +13,6 @@
         "requested": "[10.0.10, )",
         "resolved": "10.0.10",
         "contentHash": "aup0x7tq3XRIe3Db4NzTFzJCOafa8nlmDeLZiJ/35yfynT4NVd4ftRbiA2ywym4Wpvka1JusIqTP9sTOwj/N0g=="
-      },
-      "Microsoft.WindowsDesktop.App.Runtime.win-x64": {
-        "type": "Direct",
-        "requested": "[10.0.10, )",
-        "resolved": "10.0.10",
-        "contentHash": "+SG150JPqRksZkBl9nXPvY2iHKxSMzBuJoxqnGmerI7xuV3KK593+tK36gJXUuavwrFcqL3qkHsFT1m0yPgjsw=="
       },
       "org.k2fsa.sherpa.onnx": {
         "type": "Direct",
@@ -84,12 +72,6 @@
       }
     },
     "net10.0/win-x64": {
-      "Microsoft.AspNetCore.App.Runtime.win-x64": {
-        "type": "Direct",
-        "requested": "[10.0.10, )",
-        "resolved": "10.0.10",
-        "contentHash": "YUpE0pT/TH+PdL13dbJSSTcgjvWJUQlfpZ+IbsVZfBnjSfB141cpY4snL9Gd3Y/XH7sTT957cG5+qPuIUjvBTQ=="
-      },
       "Microsoft.NETCore.App.Host.win-x64": {
         "type": "Direct",
         "requested": "[10.0.10, )",
@@ -101,12 +83,6 @@
         "requested": "[10.0.10, )",
         "resolved": "10.0.10",
         "contentHash": "aup0x7tq3XRIe3Db4NzTFzJCOafa8nlmDeLZiJ/35yfynT4NVd4ftRbiA2ywym4Wpvka1JusIqTP9sTOwj/N0g=="
-      },
-      "Microsoft.WindowsDesktop.App.Runtime.win-x64": {
-        "type": "Direct",
-        "requested": "[10.0.10, )",
-        "resolved": "10.0.10",
-        "contentHash": "+SG150JPqRksZkBl9nXPvY2iHKxSMzBuJoxqnGmerI7xuV3KK593+tK36gJXUuavwrFcqL3qkHsFT1m0yPgjsw=="
       },
       "org.k2fsa.sherpa.onnx.runtime.android-arm64": {
         "type": "Transitive",
