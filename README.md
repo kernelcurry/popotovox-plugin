@@ -8,7 +8,8 @@ By **[kernelcurry](https://kernelcurry.com)**.
 
 ## Status
 
-**Working end-to-end and confirmed in-game** (release polish under way). Full pipeline:
+**Released and installable** — v0.9.x ships via the custom Dalamud repo (install steps below), and a
+submission to the official Dalamud plugin repository is in review. Full pipeline:
 dialogue capture → NPC identity resolution → rules + local-LLM casting → local TTS, with a
 management UI (NPC browser, bio cards, override editor, presets) and a signed, SHA-256-verified
 asset downloader.

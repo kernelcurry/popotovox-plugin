@@ -12,6 +12,7 @@ public enum AssetKind
     TtsModel,         // Piper voice model
     TtsModelConfig,   // Piper voice config
     KokoroModel,      // sherpa-onnx Kokoro model bundle (.tar.bz2)
+    KokoroRuntime,    // sherpa-onnx native libraries (win-x64 shared, static CRT) the TTS host P/Invokes
     LlmRuntime,       // CPU llama-server (the casting/emotion LLM)
     LlmRuntimeCuda,   // CUDA llama-server + cudart — runs the casting/emotion LLM on GPU
     LlmModel,         // the casting/emotion GGUF

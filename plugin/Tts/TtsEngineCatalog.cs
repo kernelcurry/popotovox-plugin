@@ -47,7 +47,7 @@ public static class TtsEngineCatalog
         new TtsEngineInfo(
             TtsEngineChoice.Kokoro, "Kokoro", Tier: 1, RequiresGpu: false, SupportsEmotion: false,
             SpeakerCount: KokoroEngine.SpeakerCount,
-            AssetIds: new[] { "kokoro-multi-lang-v1_0" },
+            AssetIds: new[] { "kokoro-multi-lang-v1_0", "sherpa-native" },
             Notes: "Natural-sounding, runs on CPU. The default.",
             Tagline: "Natural voices with real-world accents, works on any PC",
             Summary: "Clear, natural-sounding speech with 53 voices spanning nine real-world accents " +

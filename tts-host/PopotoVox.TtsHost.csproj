@@ -7,6 +7,13 @@
     stays fast. The plugin talks to it over stdin (JSON lines) / a temp WAV file /
     stdout (completion signal) — the same proven, text-mode-safe pattern we use for
     Piper. Self-contained so it needs no separately-installed .NET runtime.
+
+    sherpa-onnx is P/Invoked directly (SherpaNative.cs), NOT referenced as a NuGet
+    package: the metapackage drags 8 unconditional platform runtime packages into the
+    lockfile (9 new packages for the official repo's reviewers). The native libraries
+    (sherpa-onnx-c-api.dll + onnxruntime.dll) install via the plugin's signed asset
+    manifest ("sherpa-native") and their directory is passed to this host via the
+    native-dir command-line argument.
   -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -31,8 +38,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="org.k2fsa.sherpa.onnx" Version="1.13.2" />
-
     <!--
       These contribute nothing to the build (all assets excluded) — they exist so the
       runtime packs land in packages.lock.json. Self-contained win-x64 restore requests

@@ -1,7 +1,7 @@
 <Project Sdk="Dalamud.NET.Sdk/15.0.0">
 
   <PropertyGroup>
-    <Version>0.9.12.0</Version>
+    <Version>0.9.13.0</Version>
     <IsPackable>false</IsPackable>
 
     <!-- Linux containers (our Docker CI and the official repo's Plogon builder) need this to
@@ -68,9 +68,10 @@
 
   <!--
     Build + publish the isolated TTS helper into the plugin output as tts-host/, so
-    a dev-plugin install (pointing at bin/$(Configuration)) can launch it. Runs after
-    the plugin Build. (For distribution the helper bundle will move to a verified
-    download; bundling it in the dev output is fine for local testing.)
+    it ships inside the plugin zip and the official repo builds it from source. Its
+    native speech libraries (sherpa-onnx) do NOT ride along — they install via the
+    signed-manifest "sherpa-native" download, keeping the helper's lockfile free of
+    the 9-package sherpa NuGet graph.
   -->
   <Target Name="PublishTtsHost" AfterTargets="Build">
     <Exec Command="dotnet publish &quot;$(MSBuildProjectDirectory)\..\tts-host\PopotoVox.TtsHost.csproj&quot; -c $(Configuration) -r win-x64 --self-contained true -o &quot;$(OutDir)tts-host&quot;" />

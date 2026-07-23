@@ -5,7 +5,10 @@ using SherpaOnnx;
 
 // PopotoVox.TtsHost: load a Kokoro model once, then render one WAV per stdin request.
 //
-// Usage:  PopotoVox.TtsHost --model-dir <dir-with-model.onnx>
+// Usage:  PopotoVox.TtsHost --model-dir <dir-with-model.onnx> --native-dir <dir-with-sherpa-onnx-c-api.dll>
+// --native-dir points at the signed-manifest-installed sherpa-onnx native libraries
+// (sherpa-onnx-c-api.dll + onnxruntime.dll); when omitted, DLLs next to the exe are
+// used (dev convenience for a hand-copied pair).
 // Protocol (one JSON object per stdin line):
 //   {"text":"...","speakerId":0,"speed":1.0,"outputFile":"C:\\...\\u1.wav"}
 // On success it writes the WAV to outputFile and echoes that path on stdout.
@@ -34,6 +37,26 @@ foreach (var required in new[] { "model.onnx", "voices.bin", "tokens.txt", "lexi
     }
 }
 
+// Load the sherpa-onnx natives from the manifest-installed dir (or next to the exe in dev).
+var nativeDir = GetArg(args, "--native-dir") ?? AppContext.BaseDirectory;
+foreach (var dll in new[] { "sherpa-onnx-c-api.dll", "onnxruntime.dll" })
+{
+    if (!File.Exists(Path.Combine(nativeDir, dll)))
+    {
+        Console.Error.WriteLine($"ERR: missing native library '{dll}' in {nativeDir}");
+        return 5;
+    }
+}
+try
+{
+    SherpaNative.Initialize(nativeDir);
+}
+catch (Exception ex)
+{
+    Console.Error.WriteLine("ERR: failed to load sherpa-onnx natives: " + ex.Message);
+    return 5;
+}
+
 OfflineTts tts;
 try
 {
@@ -56,6 +79,15 @@ catch (Exception ex)
     Console.Error.WriteLine("ERR: failed to initialize Kokoro: " + ex.Message);
     return 4;
 }
+
+// ABI sanity gate: with a drifted native version, struct misalignment shows up as garbage
+// here (or a fault above) — fail loudly at startup, never mid-render.
+if (tts.NumSpeakers <= 0 || tts.SampleRate <= 0)
+{
+    Console.Error.WriteLine($"ERR: implausible model info (speakers={tts.NumSpeakers}, rate={tts.SampleRate}) — native/binding mismatch?");
+    return 6;
+}
+Console.Error.WriteLine($"MODEL: {tts.NumSpeakers} speakers @ {tts.SampleRate} Hz");
 
 Console.Error.WriteLine("READY"); // model loaded
 
@@ -80,7 +112,7 @@ while ((line = Console.In.ReadLine()) != null)
 
         outputPath = req.OutputFile;
         var speed = req.Speed <= 0 ? 1.0f : req.Speed;
-        var audio = tts.Generate(req.Text ?? "", speed, req.SpeakerId);
+        using var audio = tts.Generate(req.Text ?? "", speed, req.SpeakerId);
         audio.SaveToWaveFile(outputPath);
 
         Console.Out.WriteLine(outputPath); // completion signal

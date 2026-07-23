@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pluginVersion": "0.9.10",
+  "pluginVersion": "0.9.13",
   "assets": [
     {
       "id": "piper",
@@ -35,6 +35,18 @@
       "license": "CC BY 4.0",
       "attribution": "en_US-libritts-high Piper voice config (CC BY 4.0).",
       "installPath": "models/en_US-libritts-high.onnx.json"
+    },
+    {
+      "id": "sherpa-native",
+      "kind": "KokoroRuntime",
+      "tier": "1a",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/v1.13.2/sherpa-onnx-v1.13.2-win-x64-shared-MT-Release-lib.tar.bz2",
+      "size": 7466796,
+      "sha256": "de56e29a406653c0098770ac76cd2837413e95bc546ffad7f047968c360a2f3f",
+      "archive": "tarbz2",
+      "license": "Apache-2.0",
+      "attribution": "sherpa-onnx speech engine (c) k2-fsa (Next-gen Kaldi), Apache-2.0. Contains sherpa-onnx-c-api.dll (with statically compiled espeak-ng, GPL-3.0) and ONNX Runtime (MIT).",
+      "installDir": "sherpa"
     },
     {
       "id": "kokoro-multi-lang-v1_0",

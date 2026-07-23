@@ -15,6 +15,9 @@ public sealed class PluginPaths
     public string Models { get; }
     public string PiperDir { get; }
     public string KokoroDir { get; }
+
+    /// <summary>sherpa-onnx native libraries (the "sherpa-native" asset) the TTS host P/Invokes.</summary>
+    public string SherpaDir { get; }
     public string LlamaDir { get; }
     public string LlamaCudaDir { get; }
 
@@ -51,6 +54,7 @@ public sealed class PluginPaths
         Models = Path.Combine(Assets, "models");
         PiperDir = Path.Combine(Assets, "piper");
         KokoroDir = Path.Combine(Assets, "kokoro");
+        SherpaDir = Path.Combine(Assets, "sherpa");
         LlamaDir = Path.Combine(Assets, "llama");
         LlamaCudaDir = Path.Combine(Assets, "llama-cuda");
         VoxCpmRuntimeDir = Path.Combine(Assets, "voxcpm2", "rt");
@@ -68,7 +72,7 @@ public sealed class PluginPaths
         NpcRecordCachePath = Path.Combine(Cache, "npc-records.json");
         OverridesPath = Path.Combine(Root, "overrides.json");
 
-        foreach (var dir in new[] { Root, Assets, Staging, Models, PiperDir, KokoroDir, LlamaDir, LlamaCudaDir, Cache, PiperTemp, VoicesCache, LinesCache, PresetsDir })
+        foreach (var dir in new[] { Root, Assets, Staging, Models, PiperDir, KokoroDir, SherpaDir, LlamaDir, LlamaCudaDir, Cache, PiperTemp, VoicesCache, LinesCache, PresetsDir })
             Directory.CreateDirectory(dir);
 
         // Clear any temp WAVs a previous (possibly crashed) session left behind so the

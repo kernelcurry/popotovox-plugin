@@ -35,17 +35,19 @@ The plugin has **no native code** — a voice/LLM fault kills only the helper pr
 
 | Helper | Hosts | License(s) |
 |--------|-------|-----------|
-| `PopotoVox.TtsHost.exe` (our self-contained .NET helper, `tts-host/`) | **sherpa-onnx** TTS runtime (Apache-2.0, k2-fsa) with **espeak-ng** (GPL-3.0) inside the Kokoro bundle | Apache-2.0 + GPL-3.0 |
+| `PopotoVox.TtsHost.exe` (our self-contained .NET helper, `tts-host/`) | P/Invokes the **sherpa-onnx** native libraries (Apache-2.0, k2-fsa — the downloaded `sherpa-native` asset below, NOT a NuGet package) to run the Kokoro voice | Apache-2.0 (helper code GPL-3.0 with the project) |
 | `voxcpm-host` (Python, Ultra tier) | **VoxCPM2** — designs a per-NPC voice, then clones it to perform each line | Apache-2.0 |
 | `llama-server` (llama.cpp; CPU build, or the CUDA build + `cudart` when a GPU is present) | the casting/emotion LLM | MIT (+ NVIDIA-CUDA for `cudart`) |
 
-espeak-ng runs **inside** the CPU voice helpers (inside the Kokoro bundle, and inside the upstream `piper`
-binary), never linked into our plugin code. (VoxCPM2 is tokenizer-free and does not use espeak-ng.)
+espeak-ng runs **inside** the CPU voice engines' native binaries (statically compiled into
+`sherpa-onnx-c-api.dll`, and inside the upstream `piper` binary), never linked into our plugin or
+helper code. (VoxCPM2 is tokenizer-free and does not use espeak-ng.)
 
 ## Downloaded models & runtimes (pinned in `plugin/Assets/Manifest.json`, SHA-256 verified)
 
 | Id | Component | Role | License | Attribution |
 |----|-----------|------|---------|-------------|
+| `sherpa-native` | **sherpa-onnx** native libraries (win-x64 shared, static CRT) | the speech engine the TTS helper P/Invokes for Kokoro | Apache-2.0 | sherpa-onnx © k2-fsa (Next-gen Kaldi), Apache-2.0. `sherpa-onnx-c-api.dll` statically compiles espeak-ng (GPL-3.0); `onnxruntime.dll` is MIT. Unmodified upstream release archive, pinned by SHA-256. |
 | `kokoro-multi-lang-v1_0` | **Kokoro** (via sherpa-onnx) | **default** TTS model — 53 voices / 9 accents, 24 kHz | Apache-2.0 | **attribution** — TTS model by hexgrad; packaged for sherpa-onnx by k2-fsa. Bundle includes espeak-ng data (GPL-3.0). |
 | `piper` | **Piper** engine (`rhasspy/piper`, win amd64) | fallback TTS engine — separate child process | MIT | Piper © Rhasspy (MIT). Bundles espeak-ng (GPL-3.0) + ONNX Runtime (MIT) as separate binaries. |
 | `libritts-high.onnx` / `.onnx.json` | en_US-libritts-high | Piper TTS voice — 904 speakers, 22.05 kHz | CC BY 4.0 | **attribution required** — trained on LibriTTS. |
@@ -94,4 +96,9 @@ Qwen2.5-7B-Instruct (Apache-2.0, higher quality, ~4.5 GB) and Phi-3.5-mini-instr
 - **2026-06-13 (later)** — D10 simplified to native binaries. Python runtime removed from planned ledger; `llama-server` binary added; espeak-ng note updated (boundary is inside the upstream `piper` binary, not adjacent to our code).
 - **2026-06-14** — M1–M4 landed. Ledger moved from "planned" to "in use" with pinned versions + SHA-256. **LLM default corrected to Qwen2.5-1.5B-Instruct (Apache-2.0)** after finding Qwen2.5-3B is `qwen-research` (non-commercial, forbidden). NAudio (MIT) added for audio playback. License allowlist now enforced in code (`LicensePolicy`, fail-closed at manifest load + before every download).
 - **2026-06-30** — ledger brought current to the shipped **four-engine ladder** for the 0.9 release. **Corrected the Kokoro/sherpa-onnx entry** from "native, in-process" to the isolated `PopotoVox.TtsHost.exe` child process (the plugin has no native code — PRD D10). **Added** the previously-missing components: Orpheus-3B (Apache-2.0), the SNAC decoder (MIT), the llama.cpp CUDA build + `cudart` (MIT / NVIDIA-CUDA), and the Studio-tier OmniVoice + CosyVoice 3 (both Apache-2.0). Restructured into bundled / helper-process / downloaded groups; reconciled against `plugin/Assets/Manifest.json` + `AboutPage.cs`. `Manifest.json` itself unchanged (no re-sign).
+- **2026-07-22** — **sherpa-onnx moved from NuGet to a downloaded native asset** (0.9.13). The
+  `org.k2fsa.sherpa.onnx` NuGet package (whose metapackage dragged 8 platform runtime packages into the
+  official-repo needs list) is gone; `tts-host` now P/Invokes `sherpa-onnx-c-api.dll` + `onnxruntime.dll`
+  directly, installed as the new pinned `sherpa-native` manifest asset from the upstream k2-fsa v1.13.2
+  release (byte-identical DLLs to what the NuGet shipped). Manifest edited → **must be re-signed**.
 - **2026-07-02** — reconciled to the **engine-ladder overhaul**: Orpheus + Studio engines deleted, **VoxCPM2 is Ultra** (`openbmb/VoxCPM2`, Apache-2.0, `voxcpm-host`). **Removed** the `orpheus-3b-q4` + `snac-decoder` assets from `Manifest.json` and **re-signed** it (ECDSA P-256/SHA-256; verified against the embedded public key); dropped their About-page credits and the Orpheus-3B-lineage note (moot with Orpheus gone). The `llama-cuda`/`llama-cudart` CUDA runtime now serves the **casting LLM** on GPU (its manifest `kind` is still the legacy `OrpheusRuntime` — a harmless misnomer; retag deferred). VoxCPM2 has no signed-manifest assets yet (runs from dev config, like Studio did).

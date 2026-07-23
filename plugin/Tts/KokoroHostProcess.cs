@@ -23,16 +23,18 @@ internal sealed class KokoroHostProcess : IDisposable
 
     private readonly string exePath;
     private readonly string modelDir;
+    private readonly string nativeDir;
     private readonly string tempDir;
 
     private readonly SemaphoreSlim gate = new(1, 1);
     private Process? process;
     private static int counter;
 
-    public KokoroHostProcess(string exePath, string modelDir, string tempDir)
+    public KokoroHostProcess(string exePath, string modelDir, string nativeDir, string tempDir)
     {
         this.exePath = exePath;
         this.modelDir = modelDir;
+        this.nativeDir = nativeDir;
         this.tempDir = tempDir;
     }
 
@@ -104,6 +106,8 @@ internal sealed class KokoroHostProcess : IDisposable
         };
         psi.ArgumentList.Add("--model-dir");
         psi.ArgumentList.Add(modelDir);
+        psi.ArgumentList.Add("--native-dir");
+        psi.ArgumentList.Add(nativeDir);
 
         var p = new Process { StartInfo = psi };
         if (!p.Start())

@@ -20,28 +20,37 @@ public sealed class KokoroEngine : ITtsEngine
     /// <summary>The model subdir the current manifest installs; preferred over any stale sibling.</summary>
     private const string ModelDirName = "kokoro-multi-lang-v1_0";
 
+    /// <summary>The native-libs subdir the current "sherpa-native" manifest asset extracts to;
+    /// preferred over any stale sibling from an earlier pin.</summary>
+    private const string NativeDirName = "sherpa-onnx-v1.13.2-win-x64-shared-MT-Release-lib";
+
     private readonly string hostExe;
     private readonly string kokoroRoot;
+    private readonly string sherpaRoot;
     private readonly string tempDir;
     private readonly object gate = new();
 
     private KokoroHostProcess? host;
     private string? modelDir;
+    private string? nativeLibDir;
 
     public KokoroEngine(PluginPaths paths, string pluginAssemblyDir)
     {
         hostExe = Path.Combine(pluginAssemblyDir, "tts-host", "PopotoVox.TtsHost.exe");
         kokoroRoot = paths.KokoroDir;
+        sherpaRoot = paths.SherpaDir;
         tempDir = paths.PiperTemp;
     }
 
-    /// <summary>Ready once both the helper executable and the model are installed.</summary>
-    public bool IsReady => File.Exists(hostExe) && FindModelDir() != null;
+    /// <summary>Ready once the helper executable, the model, and the sherpa natives are all installed.</summary>
+    public bool IsReady => File.Exists(hostExe) && FindModelDir() != null && FindNativeDir() != null;
 
     public Task<RenderedAudio> RenderAsync(string text, VoiceSpec spec, RenderContext? ctx = null, CancellationToken ct = default)
     {
         var dir = FindModelDir()
             ?? throw new InvalidOperationException("Kokoro model is not installed yet.");
+        var natives = FindNativeDir()
+            ?? throw new InvalidOperationException("Kokoro speech libraries (sherpa-native) are not installed yet.");
         if (!File.Exists(hostExe))
             throw new InvalidOperationException("Kokoro voice helper is missing.");
 
@@ -52,7 +61,7 @@ public sealed class KokoroEngine : ITtsEngine
         KokoroHostProcess proc;
         lock (gate)
         {
-            host ??= new KokoroHostProcess(hostExe, dir, tempDir);
+            host ??= new KokoroHostProcess(hostExe, dir, natives, tempDir);
             proc = host;
         }
         return proc.SynthesizeAsync(SpeechText.StripEmotionTags(SpeechText.Normalize(text)), sid, speed, ct);
@@ -83,6 +92,37 @@ public sealed class KokoroEngine : ITtsEngine
             }
         }
         return modelDir;
+    }
+
+    /// <summary>
+    /// Locate the <c>lib/</c> directory of the installed sherpa-onnx natives. Same shape as
+    /// <see cref="FindModelDir"/>: the .tar.bz2 extracts to a versioned subdir; prefer the one
+    /// the current manifest installs so a leftover older pin can't win, and reclaim stale siblings.
+    /// </summary>
+    private string? FindNativeDir()
+    {
+        if (nativeLibDir != null && File.Exists(Path.Combine(nativeLibDir, "sherpa-onnx-c-api.dll"))) return nativeLibDir;
+        if (!Directory.Exists(sherpaRoot)) return null;
+
+        static bool HasLibs(string d) =>
+            File.Exists(Path.Combine(d, "lib", "sherpa-onnx-c-api.dll")) &&
+            File.Exists(Path.Combine(d, "lib", "onnxruntime.dll"));
+
+        var dirs = Directory.EnumerateDirectories(sherpaRoot).Where(HasLibs).ToList();
+        var chosen = dirs.FirstOrDefault(d =>
+                         string.Equals(Path.GetFileName(d), NativeDirName, StringComparison.OrdinalIgnoreCase))
+                     ?? dirs.FirstOrDefault();
+
+        if (chosen != null)
+        {
+            foreach (var d in dirs)
+            {
+                if (d == chosen) continue;
+                try { Directory.Delete(d, recursive: true); } catch { /* non-fatal */ }
+            }
+            nativeLibDir = Path.Combine(chosen, "lib");
+        }
+        return nativeLibDir;
     }
 
     public void Dispose()
